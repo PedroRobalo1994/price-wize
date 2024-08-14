@@ -1,6 +1,7 @@
 'use server'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
+import { extractPrice } from '../utils'
 
 export async function scrapeAmazonProduct(productUrl: string) {
     if(!productUrl) return 
@@ -22,6 +23,26 @@ export async function scrapeAmazonProduct(productUrl: string) {
 
     try {
         const response = await axios.get(productUrl, options)
+        const $ = cheerio.load(response.data)
+
+        // Extract the product title and price
+        const title = $('#productTitle').text().trim()
+        const currentPrice = extractPrice(
+            $('.priceToPay span.a-price-whole'),
+            $('a.size.base.a-color-price'),
+            $('.a-button-selected .a-color-base'),
+            $('.a-price.a-text-price')
+        )
+
+        const originalPrice = extractPrice(
+            $('#priceblock_ourprice'),
+            $('.a-price.a-text-price span.a-offscreen'),
+            $('#listPrice'),
+            $('#priceblock_dealprice'),
+            $('.a-size-base.a-color-price')
+        )
+
+        const outOfStock = $('#availability span').text().trim().toLowerCase() === 'currently unavailable'
 
         console.log(response.data)
     } catch (error: any) {
@@ -30,5 +51,4 @@ export async function scrapeAmazonProduct(productUrl: string) {
     }
 }
 
-    // curl --proxy brd.superproxy.io:22225 --proxy-user brd-customer-hl_f68d4f56-zone-web_unlocker_price_wize:ms8u1z04jpe1 -k "https://geo.brdtest.com/welcome.txt"
 
