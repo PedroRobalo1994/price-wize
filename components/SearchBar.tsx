@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { scrapeAndStoreProduct } from '@/lib/actions';
 import { FormEvent, useState } from 'react'
